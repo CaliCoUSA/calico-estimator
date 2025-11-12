@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaliCo Bundle Estimator</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6A0DAD"> <style>
+        :root {
+            --primary: #6A0DAD; /* Royal Purple */
+            --secondary: #FFC107; /* Yellow */
+            --accent: #36454F; /* Charcoal */
+            --bg-light: #f4f7f6;
+            --bg-white: #ffffff;
+            --text-light: #ffffff;
+            --border-color: #e9ecef;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 20px;
+            color: var(--accent); /* Charcoal text */
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: var(--bg-white);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--primary); /* Royal Purple */
+            color: var(--text-light);
+            padding: 25px 35px;
+            border-bottom: 4px solid var(--secondary); /* Yellow */
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .builder {
+            flex: 2;
+            padding: 30px 35px;
+            border-right: 1px solid var(--border-color);
+            min-width: 300px; /* Added min-width */
+        }
+        .summary {
+            flex: 1;
+            padding: 30px 35px;
+            background-color: #f8f9fa;
+            min-width: 280px; /* Added min-width */
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .service-row {
+            margin-bottom: 20px;
+        }
+        .service-row label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .service-row select, .service-row input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .summary h2 {
+            color: var(--primary); /* Royal Purple */
+            border-bottom-color: var(--primary); /* Royal Purple */
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .result-box {
+            background-color: var(--bg-white);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .result-box h3 {
+            margin: 0 0 10px;
+            font-size: 16px;
+            color: #555;
+        }
+        .result-box .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent); /* Charcoal */
+        }
+        .result-box .value.savings {
+            color: var(--primary); /* Royal Purple */
+            font-weight: 700;
+        }
+        .result-box .details {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        .cta {
+            margin-top: 20px;
+            background-color: var(--secondary); /* Yellow */
+            color: var(--accent); /* Charcoal */
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .cta-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .cta-slogan {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        button {
+            background-color: var(--accent); /* Charcoal */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #5a6a7a; /* Darker Charcoal */
+        }
+        
+        /* === NEW: MOBILE RESPONSIVE RULES === */
+        @media (max-width: 800px) {
+            body {
+                padding: 0; /* Remove padding for edge-to-edge feel */
+            }
+            .container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .main-content {
+                flex-direction: column; /* Force columns to stack */
+            }
+            .builder, .summary {
+                min-width: 0; /* Allow columns to shrink */
+                border-right: none;
+                padding: 20px 15px;
+            }
+            .summary {
+                border-top: 1px solid var(--border-color); /* Add separator */
+            }
+            header {
+                padding: 20px 15px;
+            }
+            header h1 {
+                font-size: 20px;
+            }
+        }
+        /* === END NEW RULES === */
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>CaliCo Bundle Estimator</h1>
+            <p>Demonstrating Your Workflow & Savings</p>
+        </header>
+
+        <div class="main-content">
+            <div class="builder">
+                <h2>Project Builder</h2>
+
+                <div class="service-row">
+                    <label for="logo">Logo</label>
+                    <select id="logo" onchange="calculateTotal()">
+                        <option value="none">No Logo</option>
+                        <option value="basic">Basic Logo - $30</option>
+                        <option value="xxx">XXX Logo - $75</option>
+                    </select>
+                </div>
+
+                <div class="service-row">
+                    <label for="jingle">Jingle</label>
+                    <select id="jingle" onchange="calculateTotal()">
+                        <option value="none">No Jingle</option>
+                        <option value="budget">Budget (up to 30s) - $45</option>
+                        <option value="basic">Basic (30s-1m) - $60</option>
+                        <option value="value">Value (1-2m) - $75</option>
+                        <option value="plus">Plus (2-3m) - $85</option>
+                        <option value="extra">Extra (3-4m) - $90</option>
+                        <option value="xxx">XXX (4-5m) - $95</option>
+                    </select>
+                </div>
+
+                <div class="service-row">
+                    <label for="voiceover">Voiceover</label>
+                    <select id="voiceover" onchange="calculateTotal()">
+                        <option value="none">No Voiceover</option>
+                        <option value="budget">Budget (up to 30s) - $30</option>
+                        <option value="basic">Basic (30s-1m) - $45</option>
+                        <option value="value">Value (1-2m) - $60</option>
+                        <option value="plus">Plus (2-3m) - $75</option>
+                        <option value="extra">Extra (3-4m) - $85</option>
+                        <option value="xxx">XXX (4-5m) - $90</option>
+                    </select>
+                </div>
+                
+                <div class="service-row">
+                    <label for="video">Explainer Video</label>
+                    <select id="video" onchange="calculateTotal()">
+                        <option value="none">No Video</option>
+                        <option value="budget">Budget (up to 30s) - $100</option>
+                        <option value="basic">Basic (30s-1m) - $175</option>
+                        <option value="value">Value (1-2m) - $250</option>
+                        <option value="plus">Plus (2-3m) - $350</option>
+                        <option value="extra">Extra (3-4m) - $450</option>
+                        <option value="xxx">XXX (4-5m) - $550</option>
+                    </select>
+                </div>
+
+                <div class="service-row">
+                    <label for="adcopy">Social Media Ad Campaign (per month)</label>
+                    <select id="adcopy" onchange="calculateTotal()">
+                        <option value="none">No Ad Campaign</option>
+                        <option value="budget">Budget (1st time) - $50</option>
+                        <option value="basic">Basic - $100</option>
+                        <option value="plus">Plus - $250</option>
+                        <option value="xxx">XXX - $375</option>
+                    </select>
+                </div>
+                
+                <button onclick="resetCalculator()">Reset All</button>
+
+            </div>
+
+            <div class="summary">
+                <h2>Savings Summary</h2>
+
+                <div id="results">
+                    <div class="result-box">
+                        <h3>CaliCo Quote</h3>
+                        <div class="value" id="total-price">$0</div>
+                    </div>
+
+                    <div class="result-box">
+                        <h3>Management Time Saved</h3>
+                        <div class="value savings" id="time-saved">0 hrs</div>
+                        <div class="details" id="time-saved-details">Select services to see savings</div>
+                    </div>
+                    
+                    <div class="result-box">
+                        <h3>Total Client Value</h3>
+                        <div class="value savings" id="value-saved">$0</div>
+                        <div class="details">"Soft Cost" savings (Time x $75/hr)</div>
+                    </div>
+                </div>
+
+                <div class="cta" id="cta-box" style="display: none;">
+                    <div class="cta-text">This project saves you from managing <strong><span id="cta-vendors">0</span> vendors!</strong></div>
+                    <div class="cta-slogan">CaliCo: AI Driven, Artist Approved!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // This command waits for the page to load before running JS
+        document.addEventListener('DOMContentLoaded', (event) => {
+        
+            // === CORE DATA FROM CALICO MASTER SHEET ===
+            const prices = {
+                logo: { basic: 30, xxx: 75 },
+                jingle: { budget: 45, basic: 60, value: 75, plus: 85, extra: 90, xxx: 95 },
+                voiceover: { budget: 30, basic: 45, value: 60, plus: 75, extra: 85, xxx: 90 },
+                video: { budget: 100, basic: 175, value: 250, plus: 350, extra: 450, xxx: 550 },
+                adcopy: { budget: 50, basic: 100, plus: 250, xxx: 375 }
+            };
+            const timeSavings = { logo: 9, jingle: 11, video: 18, voiceover: 10, adcopy: 14 };
+            const CLIENT_VALUE_RATE = 75;
+
+            // === PRE-DEFINED BUNDLES ===
+            const bundles = {
+                budget: { logo: "basic", voiceover: "budget", jingle: "budget", price: 65, original: 105 },
+                basic: { logo: "basic", voiceover: "basic", jingle: "basic", price: 100, original: 135 },
+                value: { logo: "xxx", voiceover: "value", jingle: "value", price: 150, original: 210 },
+                plus: { logo: "basic", jingle: "plus", voiceover: "plus", video: "budget", price: 200, original: 290 },
+                extra: { logo: "xxx", jingle: "extra", voiceover: "extra", video: "budget", price: 250, original: 350 },
+                xxx: { logo: "xxx", jingle: "xxx", voiceover: "xxx", video: "basic", price: 300, original: 435 }
+            };
+
+            // === Attach listeners to all select elements ===
+            document.getElementById('logo').addEventListener('change', calculateTotal);
+            document.getElementById('jingle').addEventListener('change', calculateTotal);
+            document.getElementById('voiceover').addEventListener('change', calculateTotal);
+            document.getElementById('video').addEventListener('change', calculateTotal);
+            document.getElementById('adcopy').addEventListener('change', calculateTotal);
+
+            // Main calculation function
+            window.calculateTotal = function() { // Make global for inline onchange
+                let totalPrice = 0;
+                let totalTimeSaved = 0;
+                let servicesSelected = 0;
+                const selections = {
+                    logo: document.getElementById('logo').value,
+                    jingle: document.getElementById('jingle').value,
+                    voiceover: document.getElementById('voiceover').value,
+                    video: document.getElementById('video').value,
+                    adcopy: document.getElementById('adcopy').value
+                };
+
+                let matchedBundle = null;
+                for (const bundleName in bundles) {
+                    const bundle = bundles[bundleName];
+                    let isMatch = true;
+                    let selectionCount = 0;
+                    for (const service in bundle) {
+                        if (service === 'price' || service === 'original') continue;
+                        if (selections[service] !== bundle[service]) { isMatch = false; break; }
+                    }
+                    for (const service in selections) { if (selections[service] !== 'none') { selectionCount++; } }
+                    const bundleItemCount = Object.keys(bundle).length - 2;
+                    if (isMatch && selectionCount === bundleItemCount) { matchedBundle = bundle; break; }
+                }
+
+                if (matchedBundle) {
+                    totalPrice = matchedBundle.price;
+                    if (matchedBundle.logo) { totalTimeSaved += timeSavings.logo; servicesSelected++; }
+                    if (matchedBundle.jingle) { totalTimeSaved += timeSavings.jingle; servicesSelected++; }
+                    if (matchedBundle.voiceover) { totalTimeSaved += timeSavings.voiceover; servicesSelected++; }
+                    if (matchedBundle.video) { totalTimeSaved += timeSavings.video; servicesSelected++; }
+                    if (matchedBundle.adcopy) { totalTimeSaved += timeSavings.adcopy; servicesSelected++; }
+                } else {
+                    if (selections.logo !== 'none') { totalPrice += prices.logo[selections.logo]; totalTimeSaved += timeSavings.logo; servicesSelected++; }
+                    if (selections.jingle !== 'none') { totalPrice += prices.jingle[selections.jingle]; totalTimeSaved += timeSavings.jingle; servicesSelected++; }
+                    if (selections.voiceover !== 'none') { totalPrice += prices.voiceover[selections.voiceover]; totalTimeSaved += timeSavings.voiceover; servicesSelected++; }
+                    if (selections.video !== 'none') { totalPrice += prices.video[selections.video]; totalTimeSaved += timeSavings.video; servicesSelected++; }
+                    if (selections.adcopy !== 'none') { totalPrice += prices.adcopy[selections.adcopy]; totalTimeSaved += timeSavings.adcopy; servicesSelected++; }
+                }
+
+                const totalValueSaved = totalTimeSaved * CLIENT_VALUE_RATE;
+                document.getElementById('total-price').innerText = `$${totalPrice}`;
+                document.getElementById('time-saved').innerText = `${totalTimeSaved} hrs`;
+                document.getElementById('value-saved').innerText = `$${totalValueSaved.toLocaleString()}`;
+                document.getElementById('time-saved-details').innerText = totalTimeSaved > 0 ? `Based on ${totalTimeSaved} hours of saved management.` : `Select services to see savings`;
+
+                const ctaBox = document.getElementById('cta-box');
+                if (servicesSelected > 1) {
+                    document.getElementById('cta-vendors').innerText = servicesSelected;
+                    ctaBox.style.display = 'block';
+                } else {
+                    ctaBox.style.display = 'none';
+                }
+            }
+
+            // Reset function
+            window.resetCalculator = function() { // Make global for inline onclick
+                document.getElementById('logo').value = 'none';
+                document.getElementById('jingle').value = 'none';
+                document.getElementById('voiceover').value = 'none';
+                document.getElementById('video').value = 'none';
+                document.getElementById('adcopy').value = 'none';
+                calculateTotal();
+            }
+            
+            // Run on page load to initialize
+            calculateTotal();
+        
+        }); // This closes the DOMContentLoaded listener
+    </script>
+</body>
+</html>
