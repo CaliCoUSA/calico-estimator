@@ -56,13 +56,13 @@
             flex: 2;
             padding: 30px 35px;
             border-right: 1px solid var(--border-color);
-            min-width: 300px; /* Added min-width */
+            min-width: 300px; 
         }
         .summary {
             flex: 1;
             padding: 30px 35px;
             background-color: #f8f9fa;
-            min-width: 280px; /* Added min-width */
+            min-width: 280px; 
         }
         h2 {
             font-size: 20px;
@@ -256,4 +256,145 @@
                     </select>
                 </div>
                 
-                <button id="reset-btn">Reset All
+                <button id="reset-btn">Reset All</button>
+
+            </div>
+
+            <div class="summary">
+                <h2>Savings Summary</h2>
+
+                <div id="results">
+                    <div class="result-box">
+                        <h3>CaliCo Quote</h3>
+                        <div class="value" id="total-price">$0</div>
+                    </div>
+
+                    <div class="result-box">
+                        <h3>Management Time Saved</h3>
+                        <div class="value savings" id="time-saved">0 hrs</div>
+                        <div class="details" id="time-saved-details">Select services to see savings</div>
+                    </div>
+                    
+                    <div class="result-box">
+                        <h3>Total Client Value</h3>
+                        <div class="value savings" id="value-saved">$0</div>
+                        <div class="details">"Soft Cost" savings (Time x $75/hr)</div>
+                    </div>
+                </div>
+
+                <div class="cta" id="cta-box" style="display: none;">
+                    <div class="cta-text">This project saves you from managing <strong><span id="cta-vendors">0</span> vendors!</strong></div>
+                    <div class="cta-slogan">CaliCo: AI Driven, Artist Approved!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+        
+            // === CORE DATA FROM CALICO MASTER SHEET ===
+            const prices = {
+                logo: { basic: 30, xxx: 75 },
+                jingle: { budget: 45, basic: 60, value: 75, plus: 85, extra: 90, xxx: 95 },
+                voiceover: { budget: 30, basic: 45, value: 60, plus: 75, extra: 85, xxx: 90 },
+                video: { budget: 100, basic: 175, value: 250, plus: 350, extra: 450, xxx: 550 },
+                adcopy: { budget: 50, basic: 100, plus: 250, xxx: 375 }
+            };
+            const timeSavings = { logo: 9, jingle: 11, video: 18, voiceover: 10, adcopy: 14 };
+            const CLIENT_VALUE_RATE = 75;
+
+            // === PRE-DEFINED BUNDLES ===
+            const bundles = {
+                budget: { logo: "basic", voiceover: "budget", jingle: "budget", price: 65, original: 105 },
+                basic: { logo: "basic", voiceover: "basic", jingle: "basic", price: 100, original: 135 },
+                value: { logo: "xxx", voiceover: "value", jingle: "value", price: 150, original: 210 },
+                plus: { logo: "basic", jingle: "plus", voiceover: "plus", video: "budget", price: 200, original: 290 },
+                extra: { logo: "xxx", jingle: "extra", voiceover: "extra", video: "budget", price: 250, original: 350 },
+                xxx: { logo: "xxx", jingle: "xxx", voiceover: "xxx", video: "basic", price: 300, original: 435 }
+            };
+
+            // === EVENT LISTENERS (The "Modern" Way) ===
+            // This now correctly attaches the functions to the buttons
+            document.getElementById('logo').addEventListener('change', calculateTotal);
+            document.getElementById('jingle').addEventListener('change', calculateTotal);
+            document.getElementById('voiceover').addEventListener('change', calculateTotal);
+            document.getElementById('video').addEventListener('change', calculateTotal);
+            document.getElementById('adcopy').addEventListener('change', calculateTotal);
+            document.getElementById('reset-btn').addEventListener('click', resetCalculator);
+
+            // === FUNCTIONS (Now defined *inside* the safe wrapper) ===
+
+            function calculateTotal() {
+                let totalPrice = 0;
+                let totalTimeSaved = 0;
+                let servicesSelected = 0;
+                const selections = {
+                    logo: document.getElementById('logo').value,
+                    jingle: document.getElementById('jingle').value,
+                    voiceover: document.getElementById('voiceover').value,
+                    video: document.getElementById('video').value,
+                    adcopy: document.getElementById('adcopy').value
+                };
+
+                let matchedBundle = null;
+                for (const bundleName in bundles) {
+                    const bundle = bundles[bundleName];
+                    let isMatch = true;
+                    let selectionCount = 0;
+                    for (const service in bundle) {
+                        if (service === 'price' || service === 'original') continue;
+                        if (selections[service] !== bundle[service]) { isMatch = false; break; }
+                    }
+                    for (const service in selections) { if (selections[service] !== 'none') { selectionCount++; } }
+                    const bundleItemCount = Object.keys(bundle).length - 2;
+                    if (isMatch && selectionCount === bundleItemCount) { matchedBundle = bundle; break; }
+                }
+
+                if (matchedBundle) {
+                    totalPrice = matchedBundle.price;
+                    if (matchedBundle.logo) { totalTimeSaved += timeSavings.logo; servicesSelected++; }
+                    if (matchedBundle.jingle) { totalTimeSaved += timeSavings.jingle; servicesSelected++; }
+                    if (matchedBundle.voiceover) { totalTimeSaved += timeSavings.voiceover; servicesSelected++; }
+                    if (matchedBundle.video) { totalTimeSaved += timeSavings.video; servicesSelected++; }
+                    if (matchedBundle.adcopy) { totalTimeSaved += timeSavings.adcopy; servicesSelected++; }
+                } else {
+                    if (selections.logo !== 'none') { totalPrice += prices.logo[selections.logo]; totalTimeSaved += timeSavings.logo; servicesSelected++; }
+                    if (selections.jingle !== 'none') { totalPrice += prices.jingle[selections.jingle]; totalTimeSaved += timeSavings.jingle; servicesSelected++; }
+                    if (selections.voiceover !== 'none') { totalPrice += prices.voiceover[selections.voiceover]; totalTimeSaved += timeSavings.voiceover; servicesSelected++; }
+                    if (selections.video !== 'none') { totalPrice += prices.video[selections.video]; totalTimeSaved += timeSavings.video; servicesSelected++; }
+                    if (selections.adcopy !== 'none') { totalPrice += prices.adcopy[selections.adcopy]; totalTimeSaved += timeSavings.adcopy; servicesSelected++; }
+                }
+
+                const totalValueSaved = totalTimeSaved * CLIENT_VALUE_RATE;
+                document.getElementById('total-price').innerText = `$${totalPrice}`;
+                document.getElementById('time-saved').innerText = `${totalTimeSaved} hrs`;
+                document.getElementById('value-saved').innerText = `$${totalValueSaved.toLocaleString()}`;
+                document.getElementById('time-saved-details').innerText = totalTimeSaved > 0 ? `Based on ${totalTimeSaved} hours of saved management.` : `Select services to see savings`;
+
+                const ctaBox = document.getElementById('cta-box');
+                if (servicesSelected > 1) {
+                    document.getElementById('cta-vendors').innerText = servicesSelected;
+                    ctaBox.style.display = 'block';
+                } else {
+                    ctaBox.style.display = 'none';
+                }
+            }
+
+            // Reset function
+            function resetCalculator() {
+                document.getElementById('logo').value = 'none';
+                document.getElementById('jingle').value = 'none';
+                document.getElementById('voiceover').value = 'none';
+                document.getElementById('video').value = 'none';
+                document.getElementById('adcopy').value = 'none';
+                calculateTotal();
+            }
+            
+            // Run on page load to initialize
+            calculateTotal();
+        
+        }); // This closes the DOMContentLoaded listener
+    </script>
+</body>
+</html>
